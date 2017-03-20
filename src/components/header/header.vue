@@ -39,6 +39,7 @@
        <i class="icon-close" @click="showDetail"></i>
      </div>
    </div>
+   <div></div>
  </div>
 </template>
 

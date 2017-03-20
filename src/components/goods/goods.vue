@@ -1,6 +1,5 @@
 <template>
   <div class="good-title">i am goods</div>
-
 </template>
 
 <script type="text/ecmascript-6">
