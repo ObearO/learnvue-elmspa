@@ -62,8 +62,6 @@
   @import "../../common/stylus/mixin"
   .star
     font-size: 0
-    margin-top: 16px
-    padding: 2px 0
     .star-item
       display: inline-block
       background-repeat: no-repeat
