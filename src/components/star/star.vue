@@ -13,33 +13,50 @@
   export default {
     props: {
       size: {
-        type: Number
+        type: Number,
+        required: true,
+        default: 48
       },
       score: {
-        type: Number
+        type: Number,
+        require: true
+      }
+    },
+    computed: {
+      starType() {
+        return 'star-' + this.size;
       },
-      computed: {
-        starType() {
-          return 'star-' + this.size;
-        },
-        itemClass() {
-          let result = [];
-          let score = Math.floor(this.score * 2) / 2;
-          let hasDeciml = score % 1 !== 0;
-          let integer = Math.floor(score);
-          for (let i = 0; i < integer; i++) {
-            result.push(CLS_ON);
-          }
-          if (hasDeciml) {
-            result.push(CLS_HALF);
-          }
-          while (result.length < LENGTH) {
-            result.push(CLS_OFF);
-          }
-          return result;
+      itemClass() {
+        let result = [];
+        let score = Math.floor(this.score * 2) / 2;
+        let hasDeciml = score % 1 !== 0;
+        let integer = Math.floor(score);
+        for (let i = 0; i < integer; i++) {
+          result.push(CLS_ON);
         }
+        if (hasDeciml) {
+          result.push(CLS_HALF);
+        }
+        while (result.length < LENGTH) {
+          result.push(CLS_OFF);
+        }
+        return result;
       }
     }
+//    watch: {
+//      size: {
+//        handler: (val) => {
+//          this.size = val;
+//        },
+//        deep: true
+//      },
+//      score: {
+//        handler: (val) => {
+//          this.score = val;
+//        },
+//        deep: true
+//      }
+//    }
   };
 </script>
 

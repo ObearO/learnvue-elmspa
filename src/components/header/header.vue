@@ -32,7 +32,7 @@
      <div class="detail-wrapper clearfix">
        <div class="detail-main">
          <h1 class="name">{{seller.name}}</h1>
-         <v-star :size="48" :score="seller.score"></v-star>
+         <star :size="48" :score="seller.score"></star>
        </div>
      </div>
      <div class="detail-close">
@@ -66,7 +66,7 @@
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
     },
     components: {
-      'v-star': star
+      star
     }
   };
 </script>
