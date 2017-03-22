@@ -1,6 +1,6 @@
 <template>
   <div class="star" :class="starType">
-    <span v-for="itemClass in itemClasses" :class="itemClass" class="star-item"></span>
+    <span v-for="itemClass in itemClasses" track-by="$index" :class="itemClass" class="star-item"></span>
   </div>
 </template>
 
@@ -14,19 +14,17 @@
     props: {
       size: {
         type: Number,
-        required: true,
-        default: 48
+        required: true
       },
       score: {
-        type: Number,
-        require: true
+        type: Number
       }
     },
     computed: {
       starType() {
         return 'star-' + this.size;
       },
-      itemClass() {
+      itemClasses() {
         let result = [];
         let score = Math.floor(this.score * 2) / 2;
         let hasDeciml = score % 1 !== 0;
@@ -64,6 +62,8 @@
   @import "../../common/stylus/mixin"
   .star
     font-size: 0
+    margin-top: 16px
+    padding: 2px 0
     .star-item
       display: inline-block
       background-repeat: no-repeat
@@ -72,7 +72,7 @@
         width: 20px
         height: 20px
         margin-right: 22px
-        backfround-size: 20px 20px
+        background-size: 20px 20px
         &:last-child
           margin-right: 0
         &.on
@@ -86,7 +86,7 @@
         width: 15px
         height: 15px
         margin-right: 16px
-        backfround-size: 15px 15px
+        background-size: 15px 15px
         &:last-child
           margin-right: 0
         &.on
@@ -100,7 +100,7 @@
         width: 10px
         height: 10px
         margin-right: 3px
-        backfround-size: 10px 10px
+        background-size: 10px 10px
         &:last-child
           margin-right: 0
         &.on
