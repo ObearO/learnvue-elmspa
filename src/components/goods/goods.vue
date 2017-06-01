@@ -1,8 +1,8 @@
 <template>
   <div class="goods">
-    <div class="menu-wrapper" v-el:menu-wrapper @click="selectMenu($index)">
+    <div class="menu-wrapper" v-el:menu-wrapper>
       <ul>
-        <li v-for="item in goods" class="menu-item" :class="{'current':currentIndex===$index}">
+        <li v-for="item in goods" class="menu-item" :class="{'current':currentIndex===$index}" @click="selectMenu($index, $event)">
           <span class="text"><span v-show="item.type>0" class="icon1" :class="classMap[item.type]"></span>{{item.name}}</span>
         </li>
       </ul>
@@ -66,9 +66,12 @@
     },
     methods: {
       _initScroll() {
-        this.menuScroll = new BScroll(this.$els.menuWrapper, {});
+        this.menuScroll = new BScroll(this.$els.menuWrapper, {
+          click: true
+        });
         this.foodScroll = new BScroll(this.$els.foodWrapper, {
-          probeType: 3
+          probeType: 3,
+          click: true
         });
         this.foodScroll.on('scroll', (pos) => {
           this.scrollY = Math.abs(Math.round(pos.y));
@@ -84,8 +87,13 @@
           this.listHeight.push(height);
         }
       },
-      selectMenu(index) {
-        console.log(index);
+      selectMenu(index, event) {
+        if (!event._constructed) {
+          return;
+        }
+        let foodList = this.$els.foodWrapper.getElementsByClassName('food-list-hook');
+        let el = foodList[index];
+        this.foodScroll.scrollToElement(el, 300);
       }
     },
     computed: {
@@ -93,7 +101,7 @@
         for (let i = 0; i < this.listHeight.length; i++) {
           let height1 = this.listHeight[i];
           let height2 = this.listHeight[i + 1];
-          if (!height2 || (this.scrollY >= height1 && this.scrollY <= height2)) {
+          if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
             return i;
           }
         }
@@ -123,13 +131,13 @@
         line-height: 14px
         padding: 0 12px
         &.current
-          posiation: relative
+          position: relative
           z-index: 10
           margin-top: -1px
           background: #fff
-          font-weight: 700
           .text
             border-none()
+            font-weight: 700
         .icon1
           display: inline-block
           vertical-align: top
