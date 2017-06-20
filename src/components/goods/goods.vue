@@ -2,7 +2,7 @@
   <div class="goods">
     <div class="menu-wrapper" v-el:menu-wrapper>
       <ul>
-        <li v-for="item in goods" class="menu-item" :class="{'current':currentIndex===$index}" @click="selectMenu($index, $event)">
+        <li v-for="item in goods" class="menu-item menu-list-hook" :class="{'current':currentIndex===$index}" @click="selectMenu($index, $event)">
           <span class="text"><span v-show="item.type>0" class="icon1" :class="classMap[item.type]"></span>{{item.name}}</span>
         </li>
       </ul>
@@ -25,17 +25,23 @@
                 <div class="price">
                   <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
                 </div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol :food="food"></cartcontrol>
+                </div>
               </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
+  import shopcart from 'components/shopcart/shopcart';
+  import cartcontrol from 'components/cartcontrol/cartcontrol';
 
   const ERR_NO = 0;
   export default {
@@ -48,7 +54,8 @@
       return {
         goods: [],
         listHeight: [],
-        scrollY: 0
+        scrollY: 0,
+        current: false
       };
     },
     created() {
@@ -70,8 +77,8 @@
           click: true
         });
         this.foodScroll = new BScroll(this.$els.foodWrapper, {
-          probeType: 3,
-          click: true
+	        click: true,
+	        probeType: 3
         });
         this.foodScroll.on('scroll', (pos) => {
           this.scrollY = Math.abs(Math.round(pos.y));
@@ -91,9 +98,10 @@
         if (!event._constructed) {
           return;
         }
+        this.current = true;
         let foodList = this.$els.foodWrapper.getElementsByClassName('food-list-hook');
         let el = foodList[index];
-        this.foodScroll.scrollToElement(el, 300);
+        this.foodScroll.scrollToElement(el, 250);
       }
     },
     computed: {
@@ -106,6 +114,10 @@
           }
         }
       }
+    },
+    components: {
+      shopcart,
+      cartcontrol
     }
   };
 </script>
@@ -215,4 +227,8 @@
             font-size: 10px
             color: rgb(147, 153, 159)
 
+          .cartcontrol-wrapper
+            position: absolute
+            right: 0
+            bottom: 12px
 </style>
