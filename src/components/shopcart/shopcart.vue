@@ -220,7 +220,7 @@
           bottom: 22px
           z-index: 200
           &.drop-transition
-            transition: all 0.4s cubic-bezier(0.54, -0.82, 1, 0.44)
+            transition: all 0.4s  cubic-bezier(0.3, -0.7, 1, 0.44)
             .inner
               width: 16px
               height: 16px
