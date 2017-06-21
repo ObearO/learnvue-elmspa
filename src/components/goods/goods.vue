@@ -34,7 +34,7 @@
         </li>
       </ul>
     </div>
-    <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
+    <shopcart v-ref:shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
   </div>
 </template>
 
@@ -55,8 +55,24 @@
         goods: [],
         listHeight: [],
         scrollY: 0,
-        current: false
+        current: false,
+        selectFoods: []
       };
+    },
+    events: {
+      'add-cart'(food) {
+        this.selectFoods.push(food);
+      },
+      'remove-cart'(food) {
+         this.selectFoods.forEach((item, index) => {
+           if (item === food) {
+	           this.selectFoods.splice(index, 1);
+           }
+         });
+      },
+      'ball'(target) {
+        this._drop(target);
+      }
     },
     created() {
       this.$http.get('/api/goods').then((response) => {
@@ -93,6 +109,9 @@
           height += item.clientHeight;
           this.listHeight.push(height);
         }
+      },
+      _drop(target) {
+        this.$refs.shopcart.drop(target);
       },
       selectMenu(index, event) {
         if (!event._constructed) {
