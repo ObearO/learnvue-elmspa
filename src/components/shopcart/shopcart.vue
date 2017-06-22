@@ -1,7 +1,7 @@
 <template>
   <div class="shopcart">
     <div class="content">
-      <div class="content-left">
+      <div class="content-left" @click="toggleList">
         <div class="logo-wrapper">
           <div class="logo" :class="{'highlight': totalCount > 0}">
             <i class="icon-shopping_cart"  :class="{'highlight': totalCount > 0}"></i>
@@ -10,7 +10,7 @@
         </div>
         <div class="price" :class="{'highlight': totalPrice > 0}">¥{{totalPrice}}</div>
         <div class="desc">另需配送费¥{{deliveryPrice}}元</div>
-      </div>
+      </div @>
       <div class="content-right" :class="{'enough': totalPrice >= minPrice}">
         <div class="pay">{{payDesc}}</div>
       </div>
@@ -19,11 +19,34 @@
           <div class="inner inner-hook"></div>
         </div>
       </div>
+      <div class="cart-list" v-show="showCartList" transition="fold">
+        <div class="list-header">
+          <span class="header-left">购物车</span>
+          <span class="header-right" @click="clearCart">清除</span>
+        </div>
+        <div class="list-content" v-el:list-content>
+          <ul>
+            <li v-for="food in selectFoods" class="food">
+              <span class="name">{{food.name}}</span>
+              <div class="price">
+                <span>¥{{food.count*food.price}}</span>
+              </div>
+              <div class="cartcontrol-wrapper">
+                <cartcontrol :food="food"></cartcontrol>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
+  <div class="list-mask" v-show="showCartList" transition="fade"></div>
 </template>
 
 <script type="text/ecmascript-6">
+  import BScroll from 'better-scroll';
+  import cartcontrol from 'components/cartcontrol/cartcontrol';
+
   export default {
   	props: {
   		selectFoods: {
@@ -44,7 +67,8 @@
           {show: false},
           {show: false}
         ],
-		    dropBalls: []
+		    dropBalls: [],
+        showList: true
       };
     },
     computed: {
@@ -71,6 +95,26 @@
 	      } else {
 		      return '去结算';
 	      }
+      },
+      showCartList() {
+  		  if (this.totalCount) {
+  		    let show = !this.showList;
+  		    if (show) {
+  		      this.$nextTick(() => {
+  		        if (!this.scroll) {
+                this.scroll = new BScroll(this.$els.listContent, {
+                  click: true
+                });
+              } else {
+  		          this.scroll.refresh();
+              }
+            });
+          }
+  		    return show;
+        } else {
+  		    this.showList = true;
+          return false;
+        }
       }
   	},
     methods: {
@@ -84,6 +128,19 @@
   					return;
           }
         }
+      },
+      toggleList() {
+  		  if (this.totalCount) {
+          this.showList = !this.showList;
+        } else {
+  		    return;
+        }
+      },
+      clearCart() {
+        this.selectFoods.forEach((food) => {
+          food.count = 0;
+        });
+        this.selectFoods.splice(0, this.selectFoods.length);
       }
     },
     transitions: {
@@ -124,11 +181,15 @@
           }
         }
       }
+    },
+    components: {
+      cartcontrol
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/mixin.styl"
   .shopcart
     position: fixed
     left: 0
@@ -227,4 +288,72 @@
               border-radius: 50%
               background: rgb(0, 160, 220)
               transition: all 0.4s linear
+      .cart-list
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        z-index: -1
+        &.fold-transition
+          transition: all 0.5s
+          transform: translate3d(0, -100%, 0)
+          opacity: 1
+        &.fold-enter, &.fold-leave
+          transform: translate3d(0, 0, 0)
+          opacity: 0
+        .list-header
+          height: 40px
+          line-height: 40px
+          padding: 0 18px
+          background: #f3f5f7
+          border-bottom: 1px solid rgba(7, 17, 27, 0.1)
+          .header-left
+            font-size: 14px
+            font-weight: 200
+            color: rgb(7, 17, 27)
+          .header-right
+            float: right
+            font-size: 12px
+            color: rgb(0, 160, 220)
+        .list-content
+          padding: 0 18px
+          max-height: 217px
+          overflow: hidden
+          background: #fff
+          .food
+            position: relative
+            padding: 12px 0
+            box-sizing: border-box
+            border-1px(rgba(7, 17, 27, 0.1))
+            .name
+              line-height: 24px
+              font-size: 14px
+              color: rgb(7, 17, 27)
+            .price
+              position: absolute
+              right: 90px
+              bottom: 12px
+              line-height: 24px
+              font-size: 14px
+              font-weight: 700px
+              color: rgb(240, 20, 20)
+            .cartcontrol-wrapper
+              position: absolute
+              right: 0
+              bottom: 6px
+  .list-mask
+    position: fixed
+    top: 0px
+    left: 0
+    width: 100%
+    height: 100%
+    z-index: 40
+    backdrop-filter: blur(10px)
+    &.fade-transition
+      transition: all 0.5s
+      opacity: 1
+      background: rgba(7 , 17, 27, 0.6)
+    &.fade-enter, &.fade-leave
+      opacity: 0
+      background: rgba(7 , 17, 27, 0)
 </style>
