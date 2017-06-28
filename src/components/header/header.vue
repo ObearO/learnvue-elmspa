@@ -220,7 +220,6 @@
       height: 100%
       overflow: auto
       transition: all .5s ease-in-out
-      filter: blur
       &.fade-transition
         opacity: 1
         background-color: rgba(7,17,27,0.8)

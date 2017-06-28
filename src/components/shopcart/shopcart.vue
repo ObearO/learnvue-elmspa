@@ -11,7 +11,7 @@
         <div class="price" :class="{'highlight': totalPrice > 0}">¥{{totalPrice}}</div>
         <div class="desc">另需配送费¥{{deliveryPrice}}元</div>
       </div>
-      <div class="content-right" :class="{'enough': totalPrice >= minPrice}">
+      <div class="content-right" :class="{'enough': totalPrice >= minPrice}" @click="pay">
         <div class="pay">{{payDesc}}</div>
       </div>
       <div class="ball-container">
@@ -141,6 +141,13 @@
           food.count = 0;
         });
         this.selectFoods.splice(0, this.selectFoods.length);
+      },
+      pay() {
+  			if (this.totalCount >= this.minPrice) {
+  				return;
+        } else {
+  				window.alert(`支付${this.totalPrice}元`);
+        }
       }
     },
     transitions: {
@@ -348,7 +355,6 @@
     width: 100%
     height: 100%
     z-index: 40
-    backdrop-filter: blur(10px)
     &.fade-transition
       transition: all 0.5s
       opacity: 1

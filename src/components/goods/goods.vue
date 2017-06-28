@@ -12,7 +12,7 @@
         <li v-for="item in goods" class="food-list food-list-hook">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" class="food-item">
+            <li v-for="food in item.foods" class="food-item" @click="selectFood(food, $event)">
               <div class="icon">
                 <img width="57px" height="57px" :src="food.icon">
               </div>
@@ -36,12 +36,14 @@
     </div>
     <shopcart v-ref:shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
   </div>
+  <food :selectedFood></food>
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
   import shopcart from 'components/shopcart/shopcart';
   import cartcontrol from 'components/cartcontrol/cartcontrol';
+  import food from 'components/food/food';
 
   const ERR_NO = 0;
   export default {
@@ -56,7 +58,8 @@
         listHeight: [],
         scrollY: 0,
         current: false,
-        selectFoods: []
+        selectFoods: [],
+        selectedFood: {}
       };
     },
     events: {
@@ -117,10 +120,15 @@
         if (!event._constructed) {
           return;
         }
-        this.current = true;
         let foodList = this.$els.foodWrapper.getElementsByClassName('food-list-hook');
         let el = foodList[index];
         this.foodScroll.scrollToElement(el, 250);
+      },
+      selectFood(food, event) {
+        if (!event._constructed) {
+          return;
+        }
+        this.selectedFood = food;
       }
     },
     computed: {
@@ -136,7 +144,8 @@
     },
     components: {
       shopcart,
-      cartcontrol
+      cartcontrol,
+      food
     }
   };
 </script>
