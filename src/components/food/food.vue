@@ -18,7 +18,17 @@
         <div class="cartcontrol-wrapper">
           <cartcontrol :food="food"></cartcontrol>
         </div>
-        <div class="buy" v-show="!food.count || food.count === 0">加入购物车</div>
+        <div @click.stop.prevent="addFirst" class="buy" v-show="!food.count || food.count === 0" transition="fade">加入购物车</div>
+      </div>
+      <split v-show="food.info"></split>
+      <div class="info" v-show="food.info">
+        <h1 class="title">商品信息</h1>
+        <p class="text">{{food.info}}</p>
+      </div>
+      <split></split>
+      <div class="rating">
+        <h1 class="title">商品评价</h1>
+        <ratingselect :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
       </div>
     </div>
   </div>
@@ -27,6 +37,13 @@
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
   import cartcontrol from 'components/cartcontrol/cartcontrol';
+  import Vue from 'vue';
+  import split from 'components/split/split';
+  import ratingselect from 'components/ratingselect/ratingselect';
+
+  //  const POSITIVE = 0;
+  //  const NEGATIVE = 1;
+  const ALL = 2;
 
   export default {
   	props: {
@@ -36,12 +53,21 @@
     },
     data() {
   		return {
-  			showFlag: false
+  			showFlag: false,
+        selectType: ALL,
+        onlyContent: true,
+        desc: {
+  			  all: '全部',
+          positive: '推荐',
+          negative: '吐槽'
+        }
       };
     },
     methods: {
   		show() {
   			this.showFlag = true;
+  			this.selectType = ALL;
+        this.onlyContent = true;
   			this.$nextTick(() => {
   				if (!this.scroll) {
   					this.scroll = new BScroll(this.$els.food, {
@@ -54,10 +80,20 @@
       },
       leave() {
   			this.showFlag = false;
+      },
+      addFirst(event) {
+  		  if (!event._constructed) {
+  		    return;
+        }
+        this.$dispatch('ball', event.target);
+        Vue.set(this.food, 'count', 1);
+        this.$dispatch('add-cart', this.food);
       }
     },
     components: {
-  		cartcontrol
+  		cartcontrol,
+      split,
+      ratingselect
     }
   };
 </script>
@@ -142,4 +178,30 @@
         border-radius 12px
         color #fff
         background-color rgb(0,160,220)
+        &.fade-transition
+          transition all 0.2s ease-in-out
+          opacity 1
+        &.fade-enter, &.fade-leave
+          opacity 0
+    .info
+      padding 18px
+      .title
+        line-height 14px
+        margin-bottom 6px
+        font-size 14px
+        color rgb(7, 17, 27)
+      .text
+        padding 0 8px
+        line-height 24px
+        font-size 12px
+        font-weight 200
+        color rgb(77, 85, 93)
+    .rating
+      padding-top 18px
+      .title
+        margin-left 18px
+        line-height 14px
+        margin-bottom 6px
+        font-size 14px
+        color rgb(7, 17, 27)
 </style>
