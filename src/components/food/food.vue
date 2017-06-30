@@ -31,7 +31,7 @@
         <ratingselect :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
         <div class="rating-wrapper">
           <ul v-show="food.ratings && food.ratings.length">
-            <li v-for="rating in food.ratings" class="rating-item">
+            <li v-show="needShow(rating.text,rating.rateType)" v-for="rating in food.ratings" class="rating-item">
               <div class="user">
                 <span class="name">{{rating.username}}</span>
                 <img :src="rating.avatar" width="12" height="12" alt="" class="avatar">
@@ -57,8 +57,8 @@
   import split from 'components/split/split';
   import ratingselect from 'components/ratingselect/ratingselect';
 
-  //  const POSITIVE = 0;
-  //  const NEGATIVE = 1;
+//  const POSITIVE = 0;
+//  const NEGATIVE = 1;
   const ALL = 2;
 
   export default {
@@ -78,6 +78,18 @@
           negative: '吐槽'
         }
       };
+    },
+    computed: {
+  		needShow(text,rateType) {
+  			if (!text && this.onlyContent) {
+  				return false;
+        }
+        if (rateType === ALL) {
+          return true;
+        } else {
+  				return rateType===this.selectType;
+        }
+      }
     },
     methods: {
   		show() {
