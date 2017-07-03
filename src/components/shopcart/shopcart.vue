@@ -143,7 +143,7 @@
         this.selectFoods.splice(0, this.selectFoods.length);
       },
       pay() {
-  			if (this.totalCount >= this.minPrice) {
+  			if (this.totalPrice < this.minPrice) {
   				return;
         } else {
   				window.alert(`支付${this.totalPrice}元`);
