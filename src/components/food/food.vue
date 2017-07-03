@@ -57,14 +57,31 @@
   import split from 'components/split/split';
   import ratingselect from 'components/ratingselect/ratingselect';
 
-//  const POSITIVE = 0;
-//  const NEGATIVE = 1;
+  const POSITIVE = 0;
+  const NEGATIVE = 1;
   const ALL = 2;
 
   export default {
   	props: {
 	    food: {
   			type: Object
+      }
+    },
+    events: {
+	    'ratingtype.select'(type) {
+        if (type === 1) {
+          this.selectType = NEGATIVE;
+        }
+        if (type === 0) {
+          this.selectType = POSITIVE;
+        }
+        if (type === 2) {
+          this.selectType = ALL;
+        this.$nextTick(() => {});
+        }
+      },
+	    'content.toggle'(onlyContent) {
+        this.onlyContent = onlyContent;
       }
     },
     data() {
@@ -79,18 +96,7 @@
         }
       };
     },
-    computed: {
-  		needShow(text,rateType) {
-  			if (!text && this.onlyContent) {
-  				return false;
-        }
-        if (rateType === ALL) {
-          return true;
-        } else {
-  				return rateType===this.selectType;
-        }
-      }
-    },
+    computed: {},
     methods: {
   		show() {
   			this.showFlag = true;
@@ -116,7 +122,17 @@
         this.$dispatch('ball', event.target);
         Vue.set(this.food, 'count', 1);
         this.$dispatch('add-cart', this.food);
-      }
+      },
+	    needShow(text, rateType) {
+		    if (!text && this.onlyContent) {
+			    return false;
+		    }
+		    if (this.selectType === ALL) {
+			    return true;
+		    } else {
+			    return this.selectType === rateType;
+		    }
+	    }
     },
     components: {
   		cartcontrol,
