@@ -62,11 +62,20 @@
     },
     created() {
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
-      this.$nextTick(() => {
-        this.scroll = new BScroll(this.$els.seller, {
-          click: true
-        });
-      });
+    },
+    watch: {
+      'seller'() {
+        this._initScroll();
+      }
+    },
+    methods: {
+      _initScroll() {
+        if (!this.scroll) {
+          this.scroll = new BScroll(this.$els.seller, {
+            click: true
+          });
+        }
+      }
     },
     components: {
       star,
