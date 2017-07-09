@@ -1,8 +1,10 @@
 <template>
   <div class="cartcontrol">
-    <div class="cart-decrease" v-show="food.count>0" @click.stop.prevent="subCart" transition="move">
-      <span class="inner icon-remove_circle_outline" transition="rotate"></span>
-    </div>
+    <transition name="move">
+      <div class="cart-decrease" v-show="food.count>0" @click.stop.prevent="subCart">
+        <span class="inner icon-remove_circle_outline"></span>
+      </div>
+    </transition>
     <div class="cart-count" v-show="food.count>0">{{food.count}}</div>
     <div class="cart-increase icon-add_circle" @click.stop.prevent="addCart"></div>
   </div>
@@ -27,9 +29,9 @@
         } else {
           this.food.count++;
         }
-        this.$dispatch('ball', event.target);
+        this.$emit('ball', event.target);
         if (this.food.count === 1) {
-	        this.$dispatch('add-cart', this.food);
+	        this.$emit('addFood', this.food);
         }
       },
       subCart(event) {
@@ -38,7 +40,7 @@
 	      }
 	      this.food.count--;
 	      if (this.food.count < 1) {
-          this.$dispatch('remove-cart', this.food);
+          this.$emit('removeFood', this.food);
         }
       }
     }
@@ -52,11 +54,11 @@
       vertical-align: top
       display inline-block
       padding: 6px
-      transition: all 0.4s ease-out
-      &.move-transition
-        opacity 1
-        transform translate3D(0, 0, 0)
-      &.move-enter, &.move-leave
+      transform translate3D(0, 0, 0)
+      opacity 1
+      &.move-enter-active, &.move-leave-active
+        transition: all 0.4s ease-out
+      &.move-enter, &.move-leave-to
         opacity 0
         transform translate3D(24px, 0, 0)
         .inner

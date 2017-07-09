@@ -1,5 +1,5 @@
 <template>
-  <div class="ratings" v-el:ratings>
+  <div class="ratings" ref="ratings">
     <div class="ratings-content">
       <div class="overview">
         <div class="over-left">
@@ -25,27 +25,29 @@
         </div>
       </div>
       <split></split>
-      <ratingselect :select-type="selectType" :only-content="onlyContent" :ratings="ratings"></ratingselect>
+      <ratingselect @select="select" @toggleContent="toggle" :select-type="selectType" :only-content="onlyContent" :ratings="ratings"></ratingselect>
       <div class="rating-wrapper">
         <ul v-show="ratings.length">
-          <li class="rating-item" v-for="rating in ratings" v-show="needShow(rating.text,rating.rateType)" transition="fade">
-            <div class="avatar">
-              <img :src="rating.avatar" alt="" width="28" height="28">
-            </div>
-            <div class="content">
-              <h1 class="name">{{rating.username}}</h1>
-              <div class="star-wrapper">
-                <star :size="24" :score="rating.score"></star>
-                <span class="delivery" v-show="rating.deliveryTime">{{rating.deliveryTime}}分钟送达</span>
+          <transition-group name="fade">
+            <li class="rating-item" v-for="rating in ratings" :key="rating" v-show="needShow(rating.text,rating.rateType)">
+              <div class="avatar">
+                <img :src="rating.avatar" alt="" width="28" height="28">
               </div>
-              <p class="text">{{rating.text}}</p>
-              <div class="recommend" v-show="rating.recommend && rating.recommend.length">
-                <span class="icon-thumb_up"></span>
-                <span class="item" v-for="item in rating.recommend">{{item}}</span>
+              <div class="content">
+                <h1 class="name">{{rating.username}}</h1>
+                <div class="star-wrapper">
+                  <star :size="24" :score="rating.score"></star>
+                  <span class="delivery" v-show="rating.deliveryTime">{{rating.deliveryTime}}分钟送达</span>
+                </div>
+                <p class="text">{{rating.text}}</p>
+                <div class="recommend" v-show="rating.recommend && rating.recommend.length">
+                  <span class="icon-thumb_up"></span>
+                  <span class="item" v-for="item in rating.recommend">{{item}}</span>
+                </div>
+                <div class="time">{{rating.rateTime | formatDate}}</div>
               </div>
-              <div class="time">{{rating.rateTime | formatDate}}</div>
-            </div>
-          </li>
+            </li>
+          </transition-group>
         </ul>
         <div class="no-ratings" v-show="!ratings.length">暂无评论</div>
       </div>
@@ -81,7 +83,7 @@
 				if (response.errno === ERR_OK) {
 					this.ratings = response.data;
           this.$nextTick(() => {
-            this.scroll = new BScroll(this.$els.ratings, {
+            this.scroll = new BScroll(this.$refs.ratings, {
               click: true
             });
           });
@@ -89,18 +91,7 @@
 			});
 		},
     events: {
-      'ratingtype.select'(type) {
-        this.selectType = type;
-        this.$nextTick(() => {
-          this.scroll.refresh();
-        });
-      },
-      'content.toggle'(onlyContent) {
-        this.onlyContent = onlyContent;
-        this.$nextTick(() => {
-          this.scroll.refresh();
-        });
-      }
+
     },
     methods: {
       needShow(text, rateType) {
@@ -112,6 +103,18 @@
         } else {
           return this.selectType === rateType;
         }
+      },
+      select(type) {
+        this.selectType = type;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
+      },
+      toggle() {
+        this.onlyContent = !this.onlyContent;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
       }
     },
     filters: {
@@ -207,10 +210,10 @@
           display flex
           padding 18px 0
           border-1px(rgba(7, 17, 27, 0.1))
-          &.fade-transition
+          &.fade-enter-active, &.fade-leave-active
             transition: all 0.2s ease
             opacity 1
-          &.fade-enter,&.fade-leave
+          &.fade-enter,&.fade-leave-to
             opacity 0
           .avatar
             flex 0 0 28px

@@ -1,46 +1,54 @@
 <template>
-  <div class="shopcart">
-    <div class="content">
-      <div class="content-left" @click="toggleList">
-        <div class="logo-wrapper">
-          <div class="logo" :class="{'highlight': totalCount > 0}">
-            <i class="icon-shopping_cart"  :class="{'highlight': totalCount > 0}"></i>
+  <div>
+    <div class="shopcart">
+      <div class="content">
+        <div class="content-left" @click="toggleList">
+          <div class="logo-wrapper">
+            <div class="logo" :class="{'highlight': totalCount > 0}">
+              <i class="icon-shopping_cart"  :class="{'highlight': totalCount > 0}"></i>
+            </div>
+            <div class="num" v-show="totalCount">{{totalCount}}</div>
           </div>
-          <div class="num" v-show="totalCount">{{totalCount}}</div>
+          <div class="price" :class="{'highlight': totalPrice > 0}">¥{{totalPrice}}</div>
+          <div class="desc">另需配送费¥{{deliveryPrice}}元</div>
         </div>
-        <div class="price" :class="{'highlight': totalPrice > 0}">¥{{totalPrice}}</div>
-        <div class="desc">另需配送费¥{{deliveryPrice}}元</div>
-      </div>
-      <div class="content-right" :class="{'enough': totalPrice >= minPrice}" @click="pay">
-        <div class="pay">{{payDesc}}</div>
-      </div>
-      <div class="ball-container">
-        <div v-for="ball in balls" v-show="ball.show" transition="drop" class="ball">
-          <div class="inner inner-hook"></div>
+        <div class="content-right" :class="{'enough': totalPrice >= minPrice}" @click="pay">
+          <div class="pay">{{payDesc}}</div>
         </div>
-      </div>
-      <div class="cart-list" v-show="showCartList" transition="fold">
-        <div class="list-header">
-          <span class="header-left">购物车</span>
-          <span class="header-right" @click="clearCart">清除</span>
+        <div class="ball-container">
+          <transition-group name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
+            <div v-for="ball in balls" :key="ball" v-show="ball.show" class="ball">
+              <div class="inner inner-hook"></div>
+            </div>
+          </transition-group>
         </div>
-        <div class="list-content" v-el:list-content>
-          <ul>
-            <li v-for="food in selectFoods" class="food">
-              <span class="name">{{food.name}}</span>
-              <div class="price">
-                <span>¥{{food.count*food.price}}</span>
-              </div>
-              <div class="cartcontrol-wrapper">
-                <cartcontrol :food="food"></cartcontrol>
-              </div>
-            </li>
-          </ul>
-        </div>
+        <transition name="fold">
+          <div class="cart-list" v-show="showCartList">
+            <div class="list-header">
+              <span class="header-left">购物车</span>
+              <span class="header-right" @click="clearCart">清除</span>
+            </div>
+            <div class="list-content" ref="listContent">
+              <ul>
+                <li v-for="food in selectFoods" class="food">
+                  <span class="name">{{food.name}}</span>
+                  <div class="price">
+                    <span>¥{{food.count*food.price}}</span>
+                  </div>
+                  <div class="cartcontrol-wrapper">
+                    <cartcontrol @removeFood="removeFood" :food="food"></cartcontrol>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </transition>
       </div>
     </div>
+    <transition name="fade">
+      <div class="list-mask" v-show="showCartList"></div>
+    </transition>
   </div>
-  <div class="list-mask" v-show="showCartList" transition="fade"></div>
 </template>
 
 <script type="text/ecmascript-6">
@@ -102,7 +110,7 @@
   		    if (show) {
   		      this.$nextTick(() => {
   		        if (!this.scroll) {
-                this.scroll = new BScroll(this.$els.listContent, {
+                this.scroll = new BScroll(this.$refs.listContent, {
                   click: true
                 });
               } else {
@@ -118,6 +126,9 @@
       }
   	},
     methods: {
+      removeFood(Food) {
+        this.$emit('removeFood', Food);
+      },
   		drop(el) {
   			for (let i = 0; i < this.balls.length; i++) {
   				let ball = this.balls[i];
@@ -148,44 +159,41 @@
         } else {
   				window.alert(`支付${this.totalPrice}元`);
         }
-      }
-    },
-    transitions: {
-  		drop: {
-  			beforeEnter(el) {
-  				let count = this.balls.length;
-          while (count--) {
-  					let ball = this.balls[count];
-  					if (ball.show) {
-  						let rect = ball.el.getBoundingClientRect();
-              let x = rect.left - 32;
-              let y = -(window.innerHeight - rect.top - 22);
-              el.style.display = '';
-              el.style.webkitTransform = `translate3d(0, ${y}px, 0)`;
-              el.style.transform = `translate3d(0, ${y}px, 0)`;
-              let inner = el.getElementsByClassName('inner-hook')[0];
-              inner.style.webkitTransform = `translate3d(${x}px, 0, 0)`;
-              inner.style.transform = `translate3d(${x}px, 0, 0)`;
-            }
+      },
+      beforeDrop(el) {
+        let count = this.balls.length;
+        while (count--) {
+          let ball = this.balls[count];
+          if (ball.show) {
+            let rect = ball.el.getBoundingClientRect();
+            let x = rect.left - 32;
+            let y = -(window.innerHeight - rect.top - 22);
+            el.style.display = '';
+            el.style.webkitTransform = `translate3d(0, ${y}px, 0)`;
+            el.style.transform = `translate3d(0, ${y}px, 0)`;
+            let inner = el.getElementsByClassName('inner-hook')[0];
+            inner.style.webkitTransform = `translate3d(${x}px, 0, 0)`;
+            inner.style.transform = `translate3d(${x}px, 0, 0)`;
           }
-        },
-        enter(el) {
-  				/* eslint-disable no-unused-vars */
-  				let rf = el.offsetHeight;
-  				this.$nextTick(() => {
-            el.style.webkitTransform = 'translate3d(0, 0, 0)';
-            el.style.transform = 'translate3d(0, 0, 0)';
-			      let inner = el.getElementsByClassName('inner-hook')[0];
-			      inner.style.webkitTransform = 'translate3d(0, 0, 0)';
-			      inner.style.transform = 'translate3d(0, 0, 0)';
-          });
-        },
-        afterEnter(el) {
-  				let ball = this.dropBalls.shift();
-	        if (ball) {
-		        ball.show = false;
-	          el.style.display = 'none';
-          }
+        }
+      },
+      dropping(el, done) {
+        /* eslint-disable no-unused-vars */
+        let rf = el.offsetHeight;
+        this.$nextTick(() => {
+          el.style.webkitTransform = 'translate3d(0, 0, 0)';
+          el.style.transform = 'translate3d(0, 0, 0)';
+          let inner = el.getElementsByClassName('inner-hook')[0];
+          inner.style.webkitTransform = 'translate3d(0, 0, 0)';
+          inner.style.transform = 'translate3d(0, 0, 0)';
+          el.addEventListener('transitionend', done);
+        });
+      },
+      afterDrop(el) {
+        let ball = this.dropBalls.shift();
+        if (ball) {
+          ball.show = false;
+          el.style.display = 'none';
         }
       }
     },
@@ -287,7 +295,7 @@
           left: 32px
           bottom: 22px
           z-index: 200
-          &.drop-transition
+          &.drop-enter-active
             transition: all 0.4s  cubic-bezier(0.3, -0.7, 1, 0.44)
             .inner
               width: 16px
@@ -301,11 +309,11 @@
         left: 0
         width: 100%
         z-index: -1
-        &.fold-transition
+        transform: translate3d(0, -100%, 0)
+        opacity: 1
+        &.fold-enter-active, &.fold-leave-active
           transition: all 0.5s
-          transform: translate3d(0, -100%, 0)
-          opacity: 1
-        &.fold-enter, &.fold-leave
+        &.fold-enter, &.fold-leave-to
           transform: translate3d(0, 0, 0)
           opacity: 0
         .list-header
@@ -350,16 +358,16 @@
               bottom: 6px
   .list-mask
     position: fixed
-    top: 0px
+    top: 0
     left: 0
     width: 100%
     height: 100%
     z-index: 40
-    &.fade-transition
+    opacity: 1
+    background: rgba(7 , 17, 27, 0.6)
+    &.fade-enter-active, &.fade-leave-active
       transition: all 0.5s
-      opacity: 1
-      background: rgba(7 , 17, 27, 0.6)
-    &.fade-enter, &.fade-leave
+    &.fade-enter, &.fade-leave-to
       opacity: 0
       background: rgba(7 , 17, 27, 0)
 </style>

@@ -1,53 +1,57 @@
 <template>
-  <div class="food" v-show="showFlag" transition="move" v-el:food>
-    <div class="food-content">
-      <div class="img-header">
-        <img :src="food.image" alt="">
-        <div class="back" @click="leave()">
-          <i class="icon-arrow_lift"></i>
+  <transition name="move">
+    <div class="food" v-show="showFlag" ref="food">
+      <div class="food-content">
+        <div class="img-header">
+          <img :src="food.image" alt="">
+          <div class="back" @click="leave()">
+            <i class="icon-arrow_lift"></i>
+          </div>
         </div>
-      </div>
-      <div class="content">
-        <h1 class="title">{{food.name}}</h1>
-        <div class="detail">
-          <span class="sell-count">月售{{food.sellCount}}份</span><span class="rating">好评率{{food.rating}}%</span>
+        <div class="content">
+          <h1 class="title">{{food.name}}</h1>
+          <div class="detail">
+            <span class="sell-count">月售{{food.sellCount}}份</span><span class="rating">好评率{{food.rating}}%</span>
+          </div>
+          <div class="price">
+            <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
+          </div>
+          <div class="cartcontrol-wrapper">
+            <cartcontrol :food="food"></cartcontrol>
+          </div>
+          <transition name="fade">
+            <div @click.stop.prevent="addFirst" class="buy" v-show="!food.count || food.count === 0">加入购物车</div>
+          </transition>
         </div>
-        <div class="price">
-          <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
+        <split v-show="food.info"></split>
+        <div class="info" v-show="food.info">
+          <h1 class="title">商品信息</h1>
+          <p class="text">{{food.info}}</p>
         </div>
-        <div class="cartcontrol-wrapper">
-          <cartcontrol :food="food"></cartcontrol>
-        </div>
-        <div @click.stop.prevent="addFirst" class="buy" v-show="!food.count || food.count === 0" transition="fade">加入购物车</div>
-      </div>
-      <split v-show="food.info"></split>
-      <div class="info" v-show="food.info">
-        <h1 class="title">商品信息</h1>
-        <p class="text">{{food.info}}</p>
-      </div>
-      <split></split>
-      <div class="rating">
-        <h1 class="title">商品评价</h1>
-        <ratingselect :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
-        <div class="rating-wrapper">
-          <ul v-show="food.ratings && food.ratings.length">
-            <li v-show="needShow(rating.text,rating.rateType)" v-for="rating in food.ratings" class="rating-item">
-              <div class="user">
-                <span class="name">{{rating.username}}</span>
-                <img :src="rating.avatar" width="12" height="12" alt="" class="avatar">
-              </div>
-              <div class="time">{{rating.rateTime | formatDate}}</div>
-              <p class="text">
-                <span :class="{'icon-thumb_up':rating.rateType===0,'icon-thumb_down':rating.rateType===1}"></span>
-                {{rating.text}}
-              </p>
-            </li>
-          </ul>
-          <div class="no-rating" v-show="!food.ratings || !food.ratings.length">暂无评价</div>
+        <split></split>
+        <div class="rating">
+          <h1 class="title">商品评价</h1>
+          <ratingselect @select="select" @toggle="toggle" :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
+          <div class="rating-wrapper">
+            <ul v-show="food.ratings && food.ratings.length">
+              <li v-show="needShow(rating.text,rating.rateType)" v-for="rating in food.ratings" class="rating-item">
+                <div class="user">
+                  <span class="name">{{rating.username}}</span>
+                  <img :src="rating.avatar" width="12" height="12" alt="" class="avatar">
+                </div>
+                <div class="time">{{rating.rateTime | formatDate}}</div>
+                <p class="text">
+                  <span :class="{'icon-thumb_up':rating.rateType===0,'icon-thumb_down':rating.rateType===1}"></span>
+                  {{rating.text}}
+                </p>
+              </li>
+             </ul>
+            <div class="no-rating" v-show="!food.ratings || !food.ratings.length">暂无评价</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script type="text/ecmascript-6">
@@ -64,20 +68,6 @@
   	props: {
 	    food: {
   			type: Object
-      }
-    },
-    events: {
-	    'ratingtype.select'(type) {
-        this.selectType = type;
-        this.$nextTick(() => {
-          this.scroll.refresh();
-        });
-      },
-	    'content.toggle'(onlyContent) {
-        this.onlyContent = onlyContent;
-	      this.$nextTick(() => {
-		      this.scroll.refresh();
-	      });
       }
     },
     data() {
@@ -100,7 +90,7 @@
         this.onlyContent = true;
   			this.$nextTick(() => {
   				if (!this.scroll) {
-  					this.scroll = new BScroll(this.$els.food, {
+  					this.scroll = new BScroll(this.$refs.food, {
   						click: true
             });
           } else {
@@ -115,9 +105,9 @@
   		  if (!event._constructed) {
   		    return;
         }
-        this.$dispatch('ball', event.target);
+        this.$emit('ball', event.target);
         Vue.set(this.food, 'count', 1);
-        this.$dispatch('add-cart', this.food);
+        this.$emit('addFood', this.food);
       },
 	    needShow(text, rateType) {
 		    if (!text && this.onlyContent) {
@@ -128,7 +118,19 @@
 		    } else {
 			    return this.selectType === rateType;
 		    }
-	    }
+	    },
+      select(type) {
+        this.selectType = type;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
+      },
+      toggle(onlyContent) {
+        this.onlyContent = onlyContent;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
+      }
     },
     filters: {
   		formatDate(time) {
@@ -155,11 +157,11 @@
     z-index 30
     width 100%
     background #fff
-    &.move-transition
+    opacity 1
+    transform translate3d(0, 0, 0)
+    &.move-enter-active, &.move-leave-active
       transition all 0.2s linear
-      opacity 1
-      transform translate3d(0, 0, 0)
-    &.move-enter, &.move-leave
+    &.move-enter, &.move-leave-to
       transform translate3d(100%, 0, 0)
       opacity 0.5
     .img-header
@@ -226,10 +228,10 @@
         border-radius 12px
         color #fff
         background-color rgb(0,160,220)
-        &.fade-transition
+        opacity 1
+        &.fade-enter-active, &.fade-leave-active
           transition all 0.2s ease-in-out
-          opacity 1
-        &.fade-enter, &.fade-leave
+        &.fade-enter, &.fade-leave-to
           opacity 0
     .info
       padding 18px

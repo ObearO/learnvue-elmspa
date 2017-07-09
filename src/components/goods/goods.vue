@@ -1,42 +1,44 @@
 <template>
-  <div class="goods">
-    <div class="menu-wrapper" v-el:menu-wrapper>
-      <ul>
-        <li v-for="item in goods" class="menu-item menu-list-hook" :class="{'current':currentIndex===$index}" @click="selectMenu($index, $event)">
-          <span class="text"><span v-show="item.type>0" class="icon1" :class="classMap[item.type]"></span>{{item.name}}</span>
-        </li>
-      </ul>
+  <div>
+    <div class="goods">
+      <div class="menu-wrapper" ref="menuWrapper">
+        <ul>
+          <li v-for="(item,index) in goods" class="menu-item menu-list-hook" :class="{'current':currentIndex===index}" @click="selectMenu(index, $event)">
+            <span class="text"><span v-show="item.type>0" class="icon1" :class="classMap[item.type]"></span>{{item.name}}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="foods-wrapper" ref="foodWrapper">
+        <ul>
+          <li v-for="item in goods" class="food-list" ref="foodList">
+            <h1 class="title">{{item.name}}</h1>
+            <ul>
+              <li v-for="food in item.foods" class="food-item" @click="selectFood(food, $event)">
+                <div class="icon">
+                  <img width="57px" height="57px" :src="food.icon">
+                </div>
+                <div class="content">
+                  <h2 class="name">{{food.name}}</h2>
+                  <p class="desc">{{food.description}}</p>
+                  <div class="extra">
+                    <span class="count">月售{{food.sellCount}}份</span><span>好评率{{food.rating}}%</span>
+                  </div>
+                  <div class="price">
+                    <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
+                  </div>
+                  <div class="cartcontrol-wrapper">
+                    <cartcontrol @removeFood="removeCart" @ball="ball" @addFood="addCart" :food="food"></cartcontrol>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <shopcart ref="shopcart" @removeFood="removeCart" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
     </div>
-    <div class="foods-wrapper" v-el:food-wrapper>
-      <ul>
-        <li v-for="item in goods" class="food-list food-list-hook">
-          <h1 class="title">{{item.name}}</h1>
-          <ul>
-            <li v-for="food in item.foods" class="food-item" @click="selectFood(food, $event)">
-              <div class="icon">
-                <img width="57px" height="57px" :src="food.icon">
-              </div>
-              <div class="content">
-                <h2 class="name">{{food.name}}</h2>
-                <p class="desc">{{food.description}}</p>
-                <div class="extra">
-                  <span class="count">月售{{food.sellCount}}份</span><span>好评率{{food.rating}}%</span>
-                </div>
-                <div class="price">
-                  <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
-                </div>
-                <div class="cartcontrol-wrapper">
-                  <cartcontrol :food="food"></cartcontrol>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <shopcart v-ref:shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
+    <food @ball="ball" @addFood="addCart" :food="selectedFood" ref="food"></food>
   </div>
-  <food :food="selectedFood" v-ref:food></food>
 </template>
 
 <script type="text/ecmascript-6">
@@ -62,22 +64,9 @@
         selectedFood: {}
       };
     },
-    events: {
-      'add-cart'(food) {
-        this.selectFoods.push(food);
-      },
-      'remove-cart'(food) {
-         this.selectFoods.forEach((item, index) => {
-           if (item === food) {
-	           this.selectFoods.splice(index, 1);
-           }
-         });
-      },
-      'ball'(target) {
-        this._drop(target);
-      }
-    },
     created() {
+      this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
+
       this.$http.get('/api/goods').then((response) => {
         response = response.body;
         if (response.errno === ERR_NO) {
@@ -88,23 +77,24 @@
           });
         }
       });
-      this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
     },
     methods: {
       _initScroll() {
-        this.menuScroll = new BScroll(this.$els.menuWrapper, {
+        this.meunScroll = new BScroll(this.$refs.menuWrapper, {
           click: true
         });
-        this.foodScroll = new BScroll(this.$els.foodWrapper, {
-	        click: true,
-	        probeType: 3
+
+        this.foodsScroll = new BScroll(this.$refs.foodWrapper, {
+          click: true,
+          probeType: 3
         });
-        this.foodScroll.on('scroll', (pos) => {
+
+        this.foodsScroll.on('scroll', (pos) => {
           this.scrollY = Math.abs(Math.round(pos.y));
         });
       },
       _calculateHeight() {
-        let foodList = this.$els.foodWrapper.getElementsByClassName('food-list-hook');
+        let foodList = this.$refs.foodList;
         let height = 0;
         this.listHeight.push(height);
         for (let i = 0; i < foodList.length; i++) {
@@ -113,14 +103,29 @@
           this.listHeight.push(height);
         }
       },
+      ball(target) {
+        this._drop(target);
+      },
       _drop(target) {
-        this.$refs.shopcart.drop(target);
+        this.$nextTick(() => {
+          this.$refs.shopcart.drop(target);
+        });
+      },
+      addCart(food) {
+        this.selectFoods.push(food);
+      },
+      removeCart(food) {
+        this.selectFoods.forEach((item, index) => {
+          if (item === food) {
+            this.selectFoods.splice(index, 1);
+          }
+        });
       },
       selectMenu(index, event) {
         if (!event._constructed) {
           return;
         }
-        let foodList = this.$els.foodWrapper.getElementsByClassName('food-list-hook');
+        let foodList = this.$refs.foodList;
         let el = foodList[index];
         this.foodScroll.scrollToElement(el, 250);
       },
