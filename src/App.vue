@@ -17,7 +17,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-//  import {urlParse} from 'common/js/util';
+  import {urlParse} from 'common/js/util';
   import header from 'components/header/header.vue';
 
   const ERR_OK = 0;
@@ -26,18 +26,18 @@
     data() {
       return {
         seller: {
-//          id: (() => {
-//            let queryParam = urlParse();
-//            return queryParam.id;
-//          })()
+          id: (() => {
+            let queryParam = urlParse();
+            return queryParam.id;
+          })()
         }
       };
     },
     created() {
-      this.$http.get('/api/seller').then((response) => {   // ?id=' + this.seller.id
+      this.$http.get('/api/seller?id=' + this.seller.id).then((response) => {   // ?id=' + this.seller.id
         response = response.body;
         if (response.errno === ERR_OK) {
-          this.seller = response.data;                     // Object.assign({}, this.seller, response.data);
+          this.seller = Object.assign({}, this.seller, response.data);
         }
       });
     },

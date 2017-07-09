@@ -28,7 +28,7 @@
       <ratingselect :select-type="selectType" :only-content="onlyContent" :ratings="ratings"></ratingselect>
       <div class="rating-wrapper">
         <ul v-show="ratings.length">
-          <li class="rating-item" v-for="rating in ratings" v-show="needShow(rating.text,rating.rateType)">
+          <li class="rating-item" v-for="rating in ratings" v-show="needShow(rating.text,rating.rateType)" transition="fade">
             <div class="avatar">
               <img :src="rating.avatar" alt="" width="28" height="28">
             </div>
@@ -207,6 +207,11 @@
           display flex
           padding 18px 0
           border-1px(rgba(7, 17, 27, 0.1))
+          &.fade-transition
+            transition: all 0.2s ease
+            opacity 1
+          &.fade-enter,&.fade-leave
+            opacity 0
           .avatar
             flex 0 0 28px
             width 28px
