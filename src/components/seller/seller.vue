@@ -90,7 +90,7 @@
     created() {
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
     },
-    reday() {
+    ready() {
       this._initScroll();
       this._initPics();
     },
